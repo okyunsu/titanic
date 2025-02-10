@@ -1,7 +1,7 @@
 from com.okyunsu.models.titanic.dataset import Dataset
 import pandas as pd
 
-class Service: 
+class TitanicService: 
 
     dataset = Dataset()
 

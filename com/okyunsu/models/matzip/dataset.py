@@ -1,8 +1,8 @@
-from dataclasses import Dataclass
+from dataclasses import dataclass
 
-@Dataclass
-class Dataclass:
-    matizp : object
+@dataclass
+class Dataset:
+    matzip : object
     context : str
     fname : str
     id : str
@@ -48,11 +48,11 @@ class Dataclass:
 
 
     @property
-    def lebal(self) -> str:
-        return self._lebal
+    def label(self) -> str:
+        return self._label
     
-    @lebal.setter
-    def lebal(self, lebal):
-        self._lebal = lebal 
+    @label.setter
+    def label(self, label):
+        self._label = label 
          
         

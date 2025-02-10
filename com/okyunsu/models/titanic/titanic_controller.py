@@ -1,9 +1,9 @@
 from com.okyunsu.models.titanic.dataset import Dataset
-from com.okyunsu.models.titanic.service import Service
+from com.okyunsu.models.titanic.titanic_service import TitanicService
 
-class Controller:
+class TitanicController:
     dataset = Dataset() 
-    service = Service()
+    service = TitanicService()
 
     def modeling(self, train, test):
         print("😀모델링 들어옴")
