@@ -11,6 +11,7 @@ def index():
     controller = TitanicController()
     controller.modeling("train.csv", "test.csv")
 
+
     return render_template("index.html")
 
 @app.route("/titanic") 
@@ -18,6 +19,7 @@ def titanic():
 
     controller = MatzipController()
     controller.modelling("matzip.csv")
+    remove = request.form.get("remove")
 
     return render_template("titanic.html")
 

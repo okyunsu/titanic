@@ -21,7 +21,7 @@ print(f'나이브베이즈 활용한 검증 정확도 {None}')
 print(f'KNN 활용한 검증 정확도 {None}')
 print(f'SVM 활용한 검증 정확도 {None}')
 """
-
+ 
 class TitanicService: 
 
     dataset = Dataset()
@@ -31,27 +31,67 @@ class TitanicService:
         this.context = "C:\\Users\\bitcamp\\Documents\\Titanic\\com\\okyunsu\\datas\\titanic\\"
         this.fname = fname
         return pd.read_csv(this.context + this.fname) 
+        
     
+    def preprocess(self, train_fname, test_fname)->object:
+        print("-----------모델 전처리 시작-------------")
+        feature = ['PassengerId', 'Survived', 'Pclass', 'Name', 'Sex', 'Age',
+                   'SibSp', 'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked']
+        this = self.dataset
+        this.train= self.new_model(train_fname)
+        this.test = self.new_model(test_fname)
+        this.id = this.test['PassengerId']
+        # 'SibSp', 'Parch', 'Cabin', 'Tictet' 가 지워야 할 teature 이다..
+        drop_features = ['SibSp', 'Parch', 'Cabin', 'Ticket']
+        this = self.drop_feature(this, *drop_features)
+        this = self.embarked_nominal(this)
+        return this
+
+    
+
     @staticmethod
-    def pclass_ordinal():
+    def create_labels(this) -> object: 
+        return this.train["Survived"]
+
+    @staticmethod
+    def create_train(this)->object:
+        return this.train.drop("Survived", axis = 1) 
+
+    @staticmethod
+    def drop_feature(this, *drop_feature)-> object:
+
+  
+        for i in drop_feature:
+            this.test.drop([i] , axis = 1) 
+            this.train.drop([i] , axis = 1)             
+            
+        
+        return this    
+    
+
+
+    @staticmethod
+    def pclass_ordinal(this):
         pass
 
     @staticmethod
-    def gender_nominal():
+    def gender_nominal(this):
         pass
- 
+    
     @staticmethod
-    def age_ordinal():
+    def age_ordinal(this):
+        pass
+  
+
+    @staticmethod
+    def fare_ordinal(this):
         pass
   
     @staticmethod
-    def sibSp_ordinal():
-        pass
- 
-    @staticmethod
-    def sibSp_ordinal():
-        pass
-  
-    @staticmethod
-    def embarked_nominal():
-        pass
+    def embarked_nominal(this):
+        this.train = this.train.fillna({"Embarked": "S"}) #사우스햄튼이 가장 많으니까
+        this.test = this.test.fillna({"Embarked": "S"}) 
+        this.train['Embarked'] = this.train['Embarked'].map({'S':1,'C':2,"Q":3})
+        this.test['Embarked'] = this.test['Embarked'].map({'S':1,'C':2,"Q":3})
+
+        return this 
