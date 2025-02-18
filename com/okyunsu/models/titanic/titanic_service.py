@@ -35,7 +35,7 @@ class TitanicService:
     
     def preprocess(self, train_fname, test_fname)->object:
         print("-----------모델 전처리 시작-------------")
-        feature = ['PassengerId', 'Survived', 'Pclass', 'Name', 'Sex', 'Age',
+        feature = ['PassengerId', 'Survived', 'Pclass', 'Name', 'Gender', 'Age',
                    'SibSp', 'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked']
         this = self.dataset
         this.train= self.new_model(train_fname)
@@ -44,7 +44,19 @@ class TitanicService:
         # 'SibSp', 'Parch', 'Cabin', 'Tictet' 가 지워야 할 teature 이다..
         drop_features = ['SibSp', 'Parch', 'Cabin', 'Ticket']
         this = self.drop_feature(this, *drop_features)
-        this = self.embarked_nominal(this)
+        this = self.extract_title_from_name(this)
+        title_mapping = self.remove_duplicate_title(this)
+        this = self.title_nominal(this, title_mapping)
+        this = self.drop_feature(this, 'Name')
+        this = self.gender_nominal(this)
+        this = self.drop_feature(this, 'Gender')
+        this = self.embarked_nominal(this)  
+        self.df_info(this)
+        this = self.age_ratio(this)
+        this = self.drop_feature(this, 'Age')
+        this = self.pclass_ordinal(this)
+        this = self.fare_ratio(this)
+        this = self.drop_feature(this, "Fare")
         return this
 
     
@@ -58,35 +70,33 @@ class TitanicService:
         return this.train.drop("Survived", axis = 1) 
 
     @staticmethod
-    def drop_feature(this, *drop_feature)-> object:
-
+    def drop_feature(this, *feature)-> object:
   
-        for i in drop_feature:
-            this.test.drop([i] , axis = 1) 
-            this.train.drop([i] , axis = 1)             
-            
-        
+        [i.drop(j, axis = 1, inplace = True) for j in feature for i in [this.test, this.train]]
+           
         return this    
-    
+
+    # @staticmethod
+    # def null_check(this):
+    #     for i in [this.train, this.test]:
+    #         print("🐶🐮🐈",i.isnull().sum())
+    #     [print(i.isnull().sum(), inplace = True) for i in [this.test, this.train]]
+    #     return this
+        
+    # @staticmethod
+    # def kwargs_sample(**kwargs) -> None:
+    #     {print(''.join(f'키워드: {i} 값: {j}')) for i, j in  kwargs.items()}
 
 
     @staticmethod
     def pclass_ordinal(this):
-        pass
+        return this
 
     @staticmethod
     def gender_nominal(this):
-        pass
-    
-    @staticmethod
-    def age_ordinal(this):
-        pass
-  
+        return this
 
-    @staticmethod
-    def fare_ordinal(this):
-        pass
-  
+
     @staticmethod
     def embarked_nominal(this):
         this.train = this.train.fillna({"Embarked": "S"}) #사우스햄튼이 가장 많으니까
@@ -95,3 +105,37 @@ class TitanicService:
         this.test['Embarked'] = this.test['Embarked'].map({'S':1,'C':2,"Q":3})
 
         return this 
+    
+    @staticmethod
+    def remove_duplicate_title(this):
+        return this
+
+    @staticmethod
+    def extract_title_from_name(this):
+        
+        for i in [this.train, this.test]:
+            i['Titele']= i['Name'].str.extract('([A-Za-z]+)\.', expand=False)
+
+        [i.__setitem__('Titele', i['Name'].str.extract('([A-Za-z]+)\.', expand=False))
+        for i in [this.train, this.test]]
+
+        return this
+
+
+
+
+    @staticmethod
+    def title_nominal(this):
+        return this
+
+    @staticmethod
+    def df_info(this):
+        return this
+
+    @staticmethod
+    def age_ratio(this):
+        return this
+
+    @staticmethod
+    def fare_ratio(this):
+        return this
