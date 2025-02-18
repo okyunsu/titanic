@@ -43,13 +43,15 @@ class TitanicService:
         this.id = this.test['PassengerId']
         # 'SibSp', 'Parch', 'Cabin', 'Tictet' 가 지워야 할 teature 이다..
         drop_features = ['SibSp', 'Parch', 'Cabin', 'Ticket']
+        self.create_labels(this)
+        this = self.create_train(this)
         this = self.drop_feature(this, *drop_features)
         this = self.extract_title_from_name(this)
         title_mapping = self.remove_duplicate_title(this)
         this = self.title_nominal(this, title_mapping)
         this = self.drop_feature(this, 'Name')
         this = self.gender_nominal(this)
-        this = self.drop_feature(this, 'Gender')
+        this = self.drop_feature(this, 'Sex')
         this = self.embarked_nominal(this)  
         self.df_info(this)
         this = self.age_ratio(this)
@@ -63,16 +65,18 @@ class TitanicService:
 
     @staticmethod
     def create_labels(this) -> object: 
-        return this.train["Survived"]
+        this.train["Survived"]  
+        return this
 
     @staticmethod
     def create_train(this)->object:
-        return this.train.drop("Survived", axis = 1) 
+        this.train.drop("Survived", axis = 1)   
+        return this
 
     @staticmethod
     def drop_feature(this, *feature)-> object:
   
-        [i.drop(j, axis = 1, inplace = True) for j in feature for i in [this.test, this.train]]
+        [i.drop(j, axis = 1, inplace = True) for j in feature for i in [this.train, this.test]]
            
         return this    
 
@@ -108,15 +112,38 @@ class TitanicService:
     
     @staticmethod
     def remove_duplicate_title(this):
-        return this
+        a = []
+             
+        for i in [this.train, this.test]:
+            a += list(set(i['Title']))
+        a = list(set(a))
+        print(a)
+        ['Dona', 'Mrs', 'Col', 'Jonkheer', 'Dr', 'Master', 'Capt', 'Mme', 'Sir', 
+         'Mr', 'Miss', 'Don', 'Major', 'Rev', 'Lady', 'Mlle', 'Countess', 'Ms']
+
+        '''
+        ['Mr', 'Sir', 'Major', 'Don', 'Rev', 'Countess', 'Lady', 'Jonkheer', 'Dr',
+        'Miss', 'Col', 'Ms', 'Dona', 'Mlle', 'Mme', 'Mrs', 'Master', 'Capt']
+        Royal : ['Countess', 'Lady', 'Sir']
+        Rare : ['Capt','Col','Don','Dr','Major','Rev','Jonkheer','Dona','Mme' ]
+        Mr : ['Mlle']
+        Ms : ['Miss']
+        Master
+        Mrs
+        '''
+        title_mapping = {'Mr': 1, 'Ms': 2, 'Mrs': 3, 'Master': 4, 'Royal': 5, 'Rare': 6}
+
+        
+        return title_mapping
+
 
     @staticmethod
     def extract_title_from_name(this):
         
         for i in [this.train, this.test]:
-            i['Titele']= i['Name'].str.extract('([A-Za-z]+)\.', expand=False)
+            i['Title']= i['Name'].str.extract('([A-Za-z]+)\.', expand=False)
 
-        [i.__setitem__('Titele', i['Name'].str.extract('([A-Za-z]+)\.', expand=False))
+        [i.__setitem__('Title', i['Name'].str.extract(r'([A-Za-z]+)\.', expand=False))
         for i in [this.train, this.test]]
 
         return this
@@ -125,7 +152,17 @@ class TitanicService:
 
 
     @staticmethod
-    def title_nominal(this):
+    def title_nominal(this, title_mapping):
+        for i in [this.train, this.test]:
+            i['Title'] = i['Title'].replace(['Countess', 'Lady', 'Sir'], 'Royal')
+            i['Title'] = i['Title'].replace(['Capt','Col','Don','Dr','Major','Rev','Jonkheer','Dona','Mme'], 'Rare')
+            i['Title'] = i['Title'].replace(['Mlle'], 'Mr')
+            i['Title'] = i['Title'].replace(['Miss'], 'Ms')
+            # Master 는 변화없음
+            # Mrs 는 변화없음
+            i['Title'] = i['Title'].fillna(0)
+            i['Title'] = i['Title'].map(title_mapping)
+            
         return this
 
     @staticmethod
