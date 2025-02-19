@@ -1,5 +1,8 @@
+from operator import __setitem__
 from com.okyunsu.models.titanic.dataset import Dataset
 import pandas as pd
+import numpy as np
+
 
 
 """
@@ -53,14 +56,14 @@ class TitanicService:
         this = self.gender_nominal(this)
         this = self.drop_feature(this, 'Sex')
         this = self.embarked_nominal(this)  
-        self.df_info(this)
+         #self.df_info(this)
         this = self.age_ratio(this)
         this = self.drop_feature(this, 'Age')
         this = self.pclass_ordinal(this)
         this = self.fare_ratio(this)
         this = self.drop_feature(this, "Fare")
         return this
-
+ 
     
 
     @staticmethod
@@ -94,10 +97,20 @@ class TitanicService:
 
     @staticmethod
     def pclass_ordinal(this):
+
+
+
         return this
 
     @staticmethod
     def gender_nominal(this):
+
+        for i  in [this.train, this.test]:
+            i["Gender"]=i["Sex"].map({"male":0, "female":1})
+        
+        [i.__setitem__("Gender", i["Sex"].map({"male":0,"female":1}))
+         for i  in [this.train, this.test]]
+
         return this
 
 
@@ -141,7 +154,7 @@ class TitanicService:
     def extract_title_from_name(this):
         
         for i in [this.train, this.test]:
-            i['Title']= i['Name'].str.extract('([A-Za-z]+)\.', expand=False)
+            i['Title']= i['Name'].str.extract(r'([A-Za-z]+)\.', expand=False)
 
         [i.__setitem__('Title', i['Name'].str.extract(r'([A-Za-z]+)\.', expand=False))
         for i in [this.train, this.test]]
@@ -171,6 +184,22 @@ class TitanicService:
 
     @staticmethod
     def age_ratio(this):
+        age_mapping = {'Unknown':0 , 'Baby': 1, 'Child': 2, 'Teenager' : 3, 'Student': 4,
+                'Young Adult': 5, 'Adult':6,  'Senior': 7}
+
+        for i in [this.train, this.test]:
+            i["Age"] = i['Age'].fillna(-0.5)
+            print(i["Age"])  
+
+
+        bins = [-1, 0 , 5, 12, 18, 24, 35, 60, np.inf]  
+        labels = ['Unknown', 'Baby', 'Child', 'Teenager', 'Student', 'Young Adult', 'Adult', 'Senior']
+
+        for i in [this.train, this.test]:
+            i['AgeGroup'] = pd.cut(i['Age'], bins,
+                                    labels=labels, right=False).map(age_mapping)
+            print("🐺🥹🐕🦝",i[['Age',"AgeGroup"]])
+
         return this
 
     @staticmethod
